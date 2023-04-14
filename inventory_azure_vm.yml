@@ -1,0 +1,9 @@
+plugin: azure_rm
+include_vm_resource_groups:
+  - phonebook-rg
+auth_source: auto
+keyed_groups:
+  - key: tags.name
+  - key: tags.environment
+compose:
+  ansible_host: public_ip_address

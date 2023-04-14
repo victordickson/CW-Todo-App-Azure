@@ -1,0 +1,173 @@
+- name: Install Docker and config   # PLAY1
+  hosts: _development
+  become: true
+  vars_files:
+    - "playbook-vars.yml"
+  tasks:
+    - name: Update all packages
+      yum:
+        name: '*'
+        state: latest
+
+    - name: Remove Docker if installed from CentOS repo
+      yum:
+        name: "{{ item }}"
+        state: removed
+      with_items:
+        - docker
+        - docker-client
+        - docker-client-latest
+        - docker-common
+        - docker-latest
+        - docker-latest-logrotate
+        - docker-logrotate
+        - docker-engine
+
+    - name: Install yum utils
+      yum:
+        name: "{{ item }}"
+        state: latest
+      with_items:
+        - yum-utils
+        - device-mapper-persistent-data
+        - lvm2
+        - unzip
+
+    - name: Add Docker repo
+      get_url:
+        url: https://download.docker.com/linux/centos/docker-ce.repo
+        dest: /etc/yum.repos.d/docker-ce.repo
+
+    - name: Install Docker
+      package:
+        name: docker-ce
+        state: latest
+        
+    - name: Install pip
+      package:
+        name: python3-pip
+        state: present
+        update_cache: true
+        
+    - name: Install Docker SDK
+      pip:
+        name: docker
+        
+    - name: Add clouduser to docker group
+      user:
+        name: clouduser
+        groups: docker
+        append: yes
+
+    - name: Start Docker service
+      service:
+        name: docker
+        state: started
+        enabled: yes
+
+    - name: Import Microsoft key
+      rpm_key:
+        key: https://packages.microsoft.com/keys/microsoft.asc
+        state: present
+
+    - name: Add Azure CLI repository
+      copy:
+        dest: /etc/yum.repos.d/azure-cli.repo
+        content: |
+          [azure-cli]
+          name=Azure CLI
+          baseurl=https://packages.microsoft.com/yumrepos/azure-cli
+          enabled=1
+          gpgcheck=1
+          gpgkey=https://packages.microsoft.com/keys/microsoft.asc
+
+    - name: Install Azure CLI
+      yum:
+        name: azure-cli
+        state: latest
+
+    - name: Login to Azure Container Registry
+      shell: |
+        az acr login --name {{ acr_name }}
+
+- name: PostgreSQL database config
+  hosts: _postgresql
+  become: true
+  vars_files:
+    - "playbook-vars.yml"
+  vars:
+    container_name: postgr
+  tasks:
+    - name: Remove container and image if exist
+      shell: |
+        az container list -g {{ resource_group }} --query "[?name=='{{ container_name }}'].name" --output tsv | xargs -I {} az container delete -g {{ resource_group }} --name {} --yes || echo 'Not Found'
+        az acr repository delete -n {{ acr_name }} --image {{ repo_name }}:{{ container_name }} || echo 'Not Found'
+
+    - name: Launch PostgreSQL container
+      azure_rm_containerinstance:
+        resource_group: "{{ resource_group }}"
+        name: "{{ container_name }}"
+        image: "{{ acr_name }}.azurecr.io/{{ repo_name }}:{{ container_name }}"
+        command: []
+        ports:
+          - protocol: tcp
+            port: 5432
+        environment_variables:
+          POSTGRES_PASSWORD: "{{ postgres_password }}"
+        volumes:
+          - |
+            {
+              \"name\": \"db-data\",
+              \"azureFile\": {
+                \"shareName\": \"{{ acr_name }}\",
+                \"storageAccountName\": \"{{ storage_account_name }}\",
+                \"storageAccountKey\": \"{{ storage_account_key }}\",
+                \"mountPath\": \"/var/lib/postgresql/data\"
+              }
+            }
+
+- name: Nodejs server configuration
+  hosts: _nodejs
+  become: true
+  vars_files:
+    - "playbook-vars.yml"
+  vars:
+    container_name: nodejs
+  tasks:
+    - name: Remove container and image if exist
+      shell: |
+        az container list -g {{ resource_group }} --query "[?name=='{{ container_name }}'].name" --output tsv | xargs -I {} az container delete -g {{ resource_group }} --name {} --yes || echo 'Not Found'
+        az acr repository delete -n {{ acr_name }} --image {{ repo_name }}:{{ container_name }} || echo 'Not Found'
+
+    - name: Launch Nodejs container
+      azure_rm_containerinstance:
+        resource_group: "{{ resource_group }}"
+        name: "{{ container_name }}"
+        image: "{{ acr_name }}.azurecr.io/{{ repo_name }}:{{ container_name }}"
+        command: []
+        ports:
+          - protocol: tcp
+            port: 5000
+
+- name: React UI Server configuration
+  hosts: _react
+  become: true
+  vars_files:
+    - "playbook-vars.yml"
+  vars:
+    container_name: react
+  tasks:
+    - name: Remove container and image if exist
+      shell: |
+        az container list -g {{ resource_group }} --query "[?name=='{{ container_name }}'].name" --output tsv | xargs -I {} az container delete -g {{ resource_group }} --name {} --yes || echo 'Not Found'
+        az acr repository delete -n {{ acr_name }} --image {{ repo_name }}:{{ container_name }} || echo 'Not Found'
+
+    - name: Launch React container
+      azure_rm_containerinstance:
+        resource_group: "{{ resource_group }}"
+        name: "{{ container_name }}"
+        image: "{{ acr_name }}.azurecr.io/{{ repo_name }}:{{ container_name }}"
+        command: []
+        ports:
+          - protocol: tcp
+            port: 3000

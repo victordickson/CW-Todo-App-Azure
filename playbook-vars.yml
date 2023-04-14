@@ -1,0 +1,3 @@
+ecr_registry: phonebookcoy.azurecr.io
+repo_name: jenkins-project
+postgres_password: Pp123456789
