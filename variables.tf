@@ -15,7 +15,7 @@ variable "backend_container_name" {
 }
 
 variable "location" {
-  default = "eastus"
+  default = "westus"
 }
 
 variable "admin_username" {
