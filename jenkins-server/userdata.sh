@@ -29,7 +29,7 @@ chmod +x /usr/local/bin/docker-compose
 
 
 # Add ec2-user and jenkins to docker group
-usermod -a -G docker techcrux
+usermod -a -G docker clouduser
 usermod -a -G docker jenkins
 
 

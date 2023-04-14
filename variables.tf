@@ -7,7 +7,7 @@ variable "backend_rg_name" {
 }
 
 variable "backend_sa_name" {
-  default = "techcrux2"
+  default = "satechcrux"
 }
 
 variable "backend_container_name" {
