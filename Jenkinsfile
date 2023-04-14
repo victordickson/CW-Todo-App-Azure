@@ -66,7 +66,7 @@ pipeline {
                 sh 'ls -l'
                 sh 'ansible --version'
                 sh 'ansible-inventory --graph'
-                ansiblePlaybook credentialsId: 'ssh', disableHostKeyChecking: true, installation: 'ansible', inventory: 'inventory_azure_vm.yml', playbook: 'playbook.yml'
+                ansiblePlaybook credentialsId: 'ssh', disableHostKeyChecking: true, installation: 'ansible', inventory: 'inventory_azure_rm.yml', playbook: 'playbook.yml'
              }
         }
 
