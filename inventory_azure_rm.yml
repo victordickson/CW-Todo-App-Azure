@@ -1,9 +1,18 @@
 plugin: azure_rm
-include_vm_resource_groups:
-  - phonebook-rg
 auth_source: auto
 keyed_groups:
-  - key: tags.name
-  - key: tags.environment
+  - key: tags.Name
+  - key: location
+  - prefix: resource_group
 compose:
-  ansible_host: public_ip_address
+  ansible_host: publicIpAddress
+
+# Resource groups to include in the inventory
+include_vm_resource_groups:
+  - phonebook-rg
+
+# Group vars for all hosts
+all:
+  vars:
+    ansible_user: clouduser
+    ansible_ssh_private_key_file: ~/Documents/DevOps/Azure/techcrux.pem
