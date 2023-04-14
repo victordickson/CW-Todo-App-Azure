@@ -56,7 +56,7 @@ resource "azurerm_subnet" "subnet" {
 ########################
 resource "azurerm_virtual_machine" "vm" {
   count                            = 3
-  name                             = "${element(var.vm_tags, count.index )}"
+  name                             = element(var.vm_tags, count.index)
   location                         = azurerm_resource_group.rg.location
   resource_group_name              = azurerm_resource_group.rg.name
   network_interface_ids            = [ azurerm_network_interface.nic[count.index].id ]
@@ -64,7 +64,7 @@ resource "azurerm_virtual_machine" "vm" {
   delete_os_disk_on_termination    = true
   delete_data_disks_on_termination = true
   tags = {
-    "name" = "${element(var.vm_tags, count.index )}"
+    "name" = element(var.vm_tags, count.index)
     "environment" = "development"
   }
 
@@ -73,26 +73,12 @@ resource "azurerm_virtual_machine" "vm" {
     identity_ids = [ azurerm_user_assigned_identity.identity.id ]
   }
 
-  # storage_image_reference {
-  #   publisher = "Canonical"
-  #   offer     = "UbuntuServer"
-  #   sku       = "18.04-LTS"
-  #   version   = "latest"
-  # }
-
     storage_image_reference {
     publisher = "RedHat"
     offer     = "RHEL"
     sku       = "8"
     version   = "latest"
   }
-
-  # storage_image_reference {
-  #   publisher = "OpenLogic"
-  #   offer     = "CentOS"
-  #   sku       = "7.8"
-  #   version   = "latest"
-  # }
 
   storage_os_disk {
     name              = "${var.prefix}-osdisk-${count.index}"
@@ -102,7 +88,7 @@ resource "azurerm_virtual_machine" "vm" {
   }
 
   os_profile {
-    computer_name  = var.prefix
+    computer_name  = element(var.vm_tags, count.index)
     admin_username = var.admin_username
   }
 
@@ -164,60 +150,34 @@ resource "azurerm_role_assignment" "role_assignment" {
 #########################
 ### NSG & ASSOCIATION ###
 #########################
+locals {
+  inbound_ports_map = {
+    "100" : "22", # If the key starts with a number, you must use the colon syntax ":" instead of "="
+    "110" : "5000",
+    "120" : "3000",
+    "130" : "5432"
+  }
+}
 resource "azurerm_network_security_group" "nsg" {
   name                = "${var.prefix}-nsg"
   location            = azurerm_resource_group.rg.location
   resource_group_name = azurerm_resource_group.rg.name
-
-  security_rule {
-    name                       = "AllowSSH"
-    priority                   = 100
-    direction                  = "Inbound"
-    access                     = "Allow"
-    protocol                   = "Tcp"
-    source_port_range          = "*"
-    destination_port_range     = "22"
-    source_address_prefix      = "*"
-    destination_address_prefix = "*"
-  }
-
-  security_rule {
-    name                       = "Allow5000"
-    priority                   = 110
-    direction                  = "Inbound"
-    access                     = "Allow"
-    protocol                   = "Tcp"
-    source_port_range          = "*"
-    destination_port_range     = "5000"
-    source_address_prefix      = "*"
-    destination_address_prefix = "*"
-  }
-
-  security_rule {
-    name                       = "Allow3000"
-    priority                   = 120
-    direction                  = "Inbound"
-    access                     = "Allow"
-    protocol                   = "Tcp"
-    source_port_range          = "*"
-    destination_port_range     = "3000"
-    source_address_prefix      = "*"
-    destination_address_prefix = "*"
-  }
-
-  security_rule {
-    name                       = "Allow5432"
-    priority                   = 130
-    direction                  = "Inbound"
-    access                     = "Allow"
-    protocol                   = "Tcp"
-    source_port_range          = "*"
-    destination_port_range     = "5432"
-    source_address_prefix      = "*"
-    destination_address_prefix = "*"
+  dynamic "security_rule" {
+    for_each = local.inbound_ports_map
+    iterator = item
+    content {
+      name                       = "Allow-${item.value}"
+      priority                   = item.key
+      direction                  = "Inbound"
+      access                     = "Allow"
+      protocol                   = "Tcp"
+      source_port_range          = "*"
+      destination_port_range     = item.value
+      source_address_prefix      = "*"
+      destination_address_prefix = "*"
+    }
   }
 }
-
 resource "azurerm_network_interface_security_group_association" "nic_association" {
   count                     = 3
   network_interface_id      = azurerm_network_interface.nic[count.index].id
