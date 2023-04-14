@@ -7,9 +7,3 @@ keyed_groups:
   - key: tags.environment
 compose:
   ansible_host: public_ip_address
-
-jenkins:
-  ansible_host: 20.232.100.248
-  ansible_user: clouduser
-  ansible_ssh_private_key_file: ~/Documents/DevOps/Azure/
-  ansible_python_interpreter: /usr/bin/python3
