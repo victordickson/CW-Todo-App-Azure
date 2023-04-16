@@ -15,4 +15,4 @@ include_vm_resource_groups:
 all:
   vars:
     ansible_user: clouduser
-    ansible_ssh_private_key_file: ~/Documents/DevOps/Azure/techcrux.pem
+    ansible_ssh_private_key_file: ~/Documents/DevOps/Azure/
