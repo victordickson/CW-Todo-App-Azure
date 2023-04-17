@@ -1,5 +1,5 @@
-- name: Install Docker and config   # PLAY1
-  hosts: _development
+- name: Install Docker and configure
+  hosts: development
   become: true
   vars_files:
     - "playbook-vars.yml"
@@ -12,8 +12,8 @@
     - name: Remove Docker if installed from CentOS repo
       yum:
         name: "{{ item }}"
-        state: removed
-      with_items:
+        state: absent
+      loop:
         - docker
         - docker-client
         - docker-client-latest
@@ -27,7 +27,7 @@
       yum:
         name: "{{ item }}"
         state: latest
-      with_items:
+      loop:
         - yum-utils
         - device-mapper-persistent-data
         - lvm2
@@ -60,7 +60,7 @@
         append: yes
 
     - name: Start Docker service
-      service:
+      systemd:
         name: docker
         state: started
         enabled: yes
@@ -91,7 +91,7 @@
         az acr login --name {{ acr_name }}
 
 - name: PostgreSQL database config
-  hosts: _postgresql
+  hosts: postgresql
   become: true
   vars_files:
     - "playbook-vars.yml"
