@@ -1,5 +1,5 @@
 - name: Install Docker and configure
-  hosts: development
+  hosts: _development
   become: true
   vars_files:
     - "playbook-vars.yml"
@@ -91,7 +91,7 @@
         az acr login --name {{ acr_name }}
 
 - name: PostgreSQL database config
-  hosts: postgresql
+  hosts: _postgresql
   become: true
   vars_files:
     - "playbook-vars.yml"
