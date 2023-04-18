@@ -8,6 +8,7 @@
       yum:
         name: '*'
         state: latest
+        exclude: rhui-codeready-builder-for-rhel-8-x86_64-rhui-rpms
 
     - name: Remove Docker if installed from CentOS repo
       yum:
