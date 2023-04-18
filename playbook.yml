@@ -4,11 +4,21 @@
   vars_files:
     - "playbook-vars.yml"
   tasks:
+    - name: Disable repository temporarily
+      yum_repository:
+        name: rhui-codeready-builder-for-rhel-8-x86_64-rhui-rpms
+        state: absent
+      ignore_errors: yes
+
     - name: Update all packages
       yum:
         name: '*'
         state: latest
-        exclude: rhui-codeready-builder-for-rhel-8-x86_64-rhui-rpms
+        
+    - name: Enable repository again
+      yum_repository:
+        name: rhui-codeready-builder-for-rhel-8-x86_64-rhui-rpms
+        state: present
 
     - name: Remove Docker if installed from CentOS repo
       yum:
