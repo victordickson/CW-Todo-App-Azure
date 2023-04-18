@@ -73,10 +73,17 @@ resource "azurerm_virtual_machine" "vm" {
     identity_ids = [ azurerm_user_assigned_identity.identity.id ]
   }
 
-    storage_image_reference {
-    publisher = "RedHat"
-    offer     = "RHEL"
-    sku       = "8"
+  #   storage_image_reference {
+  #   publisher = "RedHat"
+  #   offer     = "RHEL"
+  #   sku       = "8"
+  #   version   = "latest"
+  # }
+
+  storage_image_reference {
+    publisher = "OpenLogic"
+    offer     = "CentOS"
+    sku       = "7.8"
     version   = "latest"
   }
 
