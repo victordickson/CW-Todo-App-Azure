@@ -50,7 +50,7 @@ pipeline {
             }
         }
 
-        stage('Push Image to ECR Repo') {
+        stage('Push Image to ACR Repo') {
             steps {
                 echo 'Pushing App Image to ECR Repo'
                 sh 'az acr login --name ${ACR_REGISTRY} --expose-token | jq -r ".accessToken" | docker login --username 00000000-0000-0000-0000-000000000000 --password-stdin "$ACR_REGISTRY"'

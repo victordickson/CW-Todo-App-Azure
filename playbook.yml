@@ -90,38 +90,30 @@
       shell: |
         az acr login --name {{ acr_name }}
 
-- name: PostgreSQL database config
+- name: PostgreSQL database config   # PLAY2
   hosts: _postgresql
   become: true
   vars_files:
     - "playbook-vars.yml"
   vars:
-    container_name: postgr
+    container_name: postgresql
   tasks:
     - name: Remove container and image if exist
-      shell: |
-        az container list -g {{ resource_group }} --query "[?name=='{{ container_name }}'].name" --output tsv | xargs -I {} az container delete -g {{ resource_group }} --name {} --yes || echo 'Not Found'
-        az acr repository delete -n {{ acr_name }} --image {{ repo_name }}:{{ container_name }} || echo 'Not Found'
-    - name: Launch PostgreSQL container
-      azure_rm_containerinstance:
-        resource_group: "{{ resource_group }}"
+      shell: "docker ps -q --filter 'name={{ container_name }}' && docker stop {{ container_name }} && docker rm -fv {{ container_name }} && docker image rm -f {{ acr_name }}/{{ repo_name }}:{{ container_name }} || echo 'Not Found'"
+
+    - name: Launch PostgreSQL Docker container
+      docker_container:
         name: "{{ container_name }}"
-        image: "{{ acr_name }}.azurecr.io/{{ repo_name }}:{{ container_name }}"
-        command: []
+        image: "{{ acr_name }}/{{ repo_name }}:{{ container_name }}"
+        state: started
         ports:
-          - protocol: tcp
-            port: 5432
-        environment_variables:
+          - "5432:5432"
+        env:
           POSTGRES_PASSWORD: "{{ postgres_password }}"
         volumes:
-          - name: "db-data"
-            azureFile:
-              shareName: "{{ acr_name }}"
-              storageAccountName: "{{ storage_account_name }}"
-              storageAccountKey: "{{ storage_account_key }}"
-              mountPath: "/var/lib/postgresql/data"
+          - /db-data:/var/lib/postgresql/data
 
-- name: Nodejs server configuration
+- name: Nodejs server configuration   # PLAY3
   hosts: _nodejs
   become: true
   vars_files:
@@ -130,20 +122,17 @@
     container_name: nodejs
   tasks:
     - name: Remove container and image if exist
-      shell: |
-        az container list -g {{ resource_group }} --query "[?name=='{{ container_name }}'].name" --output tsv | xargs -I {} az container delete -g {{ resource_group }} --name {} --yes || echo 'Not Found'
-        az acr repository delete -n {{ acr_name }} --image {{ repo_name }}:{{ container_name }} || echo 'Not Found'
-    - name: Launch Nodejs container
-      azure_rm_containerinstance:
-        resource_group: "{{ resource_group }}"
-        name: "{{ container_name }}"
-        image: "{{ acr_name }}.azurecr.io/{{ repo_name }}:{{ container_name }}"
-        command: []
-        ports:
-          - protocol: tcp
-            port: 5000
+      shell: "docker ps -q --filter 'name={{ container_name }}' && docker stop {{ container_name }} && docker rm -fv {{ container_name }} && docker image rm -f {{ acr_name }}/{{ repo_name }}:{{ container_name }} || echo 'Not Found'"
 
-- name: React UI Server configuration
+    - name: Launch Nodejs docker container
+      docker_container:
+        name: "{{ container_name }}"
+        image: "{{ acr_name }}/{{ repo_name }}:{{ container_name }}"
+        state: started
+        ports:
+          - "5000:5000"
+
+- name: React UI Server configuration   # PLAY4
   hosts: _react
   become: true
   vars_files:
@@ -152,15 +141,12 @@
     container_name: react
   tasks:
     - name: Remove container and image if exist
-      shell: |
-        az container list -g {{ resource_group }} --query "[?name=='{{ container_name }}'].name" --output tsv | xargs -I {} az container delete -g {{ resource_group }} --name {} --yes || echo 'Not Found'
-        az acr repository delete -n {{ acr_name }} --image {{ repo_name }}:{{ container_name }} || echo 'Not Found'
-    - name: Launch React container
-      azure_rm_containerinstance:
-        resource_group: "{{ resource_group }}"
+      shell: "docker ps -q --filter 'name={{ container_name }}' && docker stop {{ container_name }} && docker rm -fv {{ container_name }} && docker image rm -f {{ acr_name }}/{{ repo_name }}:{{ container_name }} || echo 'Not Found'"
+
+    - name: Launch React docker container
+      docker_container:
         name: "{{ container_name }}"
-        image: "{{ acr_name }}.azurecr.io/{{ repo_name }}:{{ container_name }}"
-        command: []
+        image: "{{ acr_name }}/{{ repo_name }}:{{ container_name }}"
+        state: started
         ports:
-          - protocol: tcp
-            port: 3000
+          - "3000:3000"
