@@ -102,7 +102,6 @@
       shell: |
         az container list -g {{ resource_group }} --query "[?name=='{{ container_name }}'].name" --output tsv | xargs -I {} az container delete -g {{ resource_group }} --name {} --yes || echo 'Not Found'
         az acr repository delete -n {{ acr_name }} --image {{ repo_name }}:{{ container_name }} || echo 'Not Found'
-
     - name: Launch PostgreSQL container
       azure_rm_containerinstance:
         resource_group: "{{ resource_group }}"
@@ -115,16 +114,12 @@
         environment_variables:
           POSTGRES_PASSWORD: "{{ postgres_password }}"
         volumes:
-          - |
-            {
-              \"name\": \"db-data\",
-              \"azureFile\": {
-                \"shareName\": \"{{ acr_name }}\",
-                \"storageAccountName\": \"{{ storage_account_name }}\",
-                \"storageAccountKey\": \"{{ storage_account_key }}\",
-                \"mountPath\": \"/var/lib/postgresql/data\"
-              }
-            }
+          - name: "db-data"
+            azureFile:
+              shareName: "{{ acr_name }}"
+              storageAccountName: "{{ storage_account_name }}"
+              storageAccountKey: "{{ storage_account_key }}"
+              mountPath: "/var/lib/postgresql/data"
 
 - name: Nodejs server configuration
   hosts: _nodejs
@@ -138,7 +133,6 @@
       shell: |
         az container list -g {{ resource_group }} --query "[?name=='{{ container_name }}'].name" --output tsv | xargs -I {} az container delete -g {{ resource_group }} --name {} --yes || echo 'Not Found'
         az acr repository delete -n {{ acr_name }} --image {{ repo_name }}:{{ container_name }} || echo 'Not Found'
-
     - name: Launch Nodejs container
       azure_rm_containerinstance:
         resource_group: "{{ resource_group }}"
@@ -161,7 +155,6 @@
       shell: |
         az container list -g {{ resource_group }} --query "[?name=='{{ container_name }}'].name" --output tsv | xargs -I {} az container delete -g {{ resource_group }} --name {} --yes || echo 'Not Found'
         az acr repository delete -n {{ acr_name }} --image {{ repo_name }}:{{ container_name }} || echo 'Not Found'
-
     - name: Launch React container
       azure_rm_containerinstance:
         resource_group: "{{ resource_group }}"
