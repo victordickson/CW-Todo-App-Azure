@@ -65,7 +65,7 @@ pipeline {
                 echo 'Deploy the App'
                 sh 'ls -l'
                 sh 'ansible --version'
-                sh 'ansible-inventory --graph --verbose'
+                sh 'ansible-inventory --graph'
                 ansiblePlaybook credentialsId: 'ssh', disableHostKeyChecking: true, installation: 'ansible', inventory: 'inventory_azure_rm.yml', playbook: 'playbook.yml'
              }
         }

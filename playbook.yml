@@ -53,7 +53,7 @@
       pip:
         name: docker
 
-    - name: Add ec2-user to docker group
+    - name: Add clouduser to docker group
       user:
         name: clouduser
         groups: docker
@@ -65,25 +65,15 @@
         state: started
         enabled: yes
 
-    - name: Download AWS CLI
-      get_url:
-        url: https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip
-        dest: /home/ec2-user/awscliv2.zip
+    - name: Install Azure CLI
+      yum:
+        name: azure-cli
+        state: latest
 
-    - name: Unzip zip file
-      unarchive:
-        src: /home/ec2-user/awscliv2.zip
-        dest: /home/ec2-user
-        remote_src: True
-
-    - name: Install the AWS CLI
-      shell: ./aws/install
-
-    - name: Login to AWS ECR
+    - name: Login to Azure Container Registry
       shell: |
-        export PATH=/usr/local/bin:$PATH
-        source ~/.bash_profile
-        aws ecr get-login-password --region {{ aws_region }} | docker login --username AWS --password-stdin {{ ecr_registry }}
+        az acr login --name {{ acr_name }}
+
 
 - name: PostgreSQL database config   # PLAY2
   hosts: _postgresql
@@ -94,12 +84,12 @@
     container_name: postgresql
   tasks:
     - name: Remove container and image if exist
-      shell: "docker ps -q --filter 'name={{ container_name }}' && docker stop {{ container_name }} && docker rm -fv {{ container_name }} && docker image rm -f {{ ecr_registry }}/{{ repo_name }}:{{ container_name }} || echo 'Not Found'"
+      shell: "docker ps -q --filter 'name={{ container_name }}' && docker stop {{ container_name }} && docker rm -fv {{ container_name }} && docker image rm -f {{ acr_name }}.azurecr.io/{{ repo_name }}:{{ container_name }} || echo 'Not Found'"
 
     - name: Launch PostgreSQL Docker container
       docker_container:
         name: "{{ container_name }}"
-        image: "{{ ecr_registry }}/{{ repo_name }}:{{ container_name }}"
+        image: "{{ acr_name }}.azurecr.io/{{ repo_name }}:{{ container_name }}"
         state: started
         ports:
           - "5432:5432"
@@ -117,12 +107,12 @@
     container_name: nodejs
   tasks:
     - name: Remove container and image if exist
-      shell: "docker ps -q --filter 'name={{ container_name }}' && docker stop {{ container_name }} && docker rm -fv {{ container_name }} && docker image rm -f {{ ecr_registry }}/{{ repo_name }}:{{ container_name }} || echo 'Not Found'"
+      shell: "docker ps -q --filter 'name={{ container_name }}' && docker stop {{ container_name }} && docker rm -fv {{ container_name }} && docker image rm -f {{ acr_name }}.azurecr.io/{{ repo_name }}:{{ container_name }} || echo 'Not Found'"
 
     - name: Launch Nodejs docker container
       docker_container:
         name: "{{ container_name }}"
-        image: "{{ ecr_registry }}/{{ repo_name }}:{{ container_name }}"
+        image: "{{ acr_name }}.azurecr.io/{{ repo_name }}:{{ container_name }}"
         state: started
         ports:
           - "5000:5000"
@@ -136,12 +126,12 @@
     container_name: react
   tasks:
     - name: Remove container and image if exist
-      shell: "docker ps -q --filter 'name={{ container_name }}' && docker stop {{ container_name }} && docker rm -fv {{ container_name }} && docker image rm -f {{ ecr_registry }}/{{ repo_name }}:{{ container_name }} || echo 'Not Found'"
+      shell: "docker ps -q --filter 'name={{ container_name }}' && docker stop {{ container_name }} && docker rm -fv {{ container_name }} && docker image rm -f {{ acr_name }}.azurecr.io/{{ repo_name }}:{{ container_name }} || echo 'Not Found'"
 
     - name: Launch React docker container
       docker_container:
         name: "{{ container_name }}"
-        image: "{{ ecr_registry }}/{{ repo_name }}:{{ container_name }}"
+        image: "{{ acr_name }}.azurecr.io/{{ repo_name }}:{{ container_name }}"
         state: started
         ports:
           - "3000:3000"
