@@ -1,4 +1,4 @@
-- name: Install Docker and config
+- name: Install Docker and config   # PLAY1
   hosts: _development
   become: true
   vars_files:
@@ -34,7 +34,9 @@
         - unzip
 
     - name: Add Docker repo
-      shell: curl https://download.docker.com/linux/centos/docker-ce.repo -o /etc/yum.repos.d/docker-ce.repo
+      get_url:
+        url: https://download.docker.com/linux/centos/docker-ce.repo
+        dest: /etc/yum.repos.d/docker-ce.repo
 
     - name: Install Docker
       package:
@@ -51,36 +53,29 @@
       pip:
         name: docker
 
-    - name: Add clouduser to docker group
-      ansible.builtin.group:
-        name: docker
-        state: present
-
-    - name: Add clouduser to docker group
-      ansible.builtin.user:
+    - name: Add ec2-user to docker group
+      user:
         name: clouduser
-        group: docker
+        groups: docker
         append: yes
 
     - name: Start Docker service
-      ansible.builtin.systemd:
+      service:
         name: docker
         state: started
         enabled: yes
-        masked: no
-
-    - name: Download Azure CLI
-      get_url:
-        url: https://aka.ms/installazurecli
-        dest: /home/clouduser/installazurecli
 
     - name: Install Azure CLI
-      command: bash /home/clouduser/installazurecli
+      shell: |
+        curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash
 
-    - name: Login to Azure Container Registry
-      ansible.builtin.azure_rm_containerregistry_login:
-        resource_group: "{{ resource_group }}"
-        name: "{{ container_registry }}"
+    - name: Login to Azure
+      shell: |
+        az login --identity
+
+    - name: Login to ACR
+      shell: |
+        az acr login --name {{ acr_name }}
 
 - name: PostgreSQL database config   # PLAY2
   hosts: _postgresql
@@ -91,12 +86,12 @@
     container_name: postgresql
   tasks:
     - name: Remove container and image if exist
-      shell: "docker ps -q --filter 'name={{ container_name }}' && docker stop {{ container_name }} && docker rm -fv {{ container_name }} && docker image rm -f {{ container_registry }}/{{ repo_name }}:{{ container_name }} || echo 'Not Found'"
+      shell: "docker ps -q --filter 'name={{ container_name }}' && docker stop {{ container_name }} && docker rm -fv {{ container_name }} && docker image rm -f {{ acr_name }}/{{ repo_name }}:{{ container_name }} || echo 'Not Found'"
 
     - name: Launch PostgreSQL Docker container
       docker_container:
         name: "{{ container_name }}"
-        image: "{{ container_registry }}/{{ repo_name }}:{{ container_name }}"
+        image: "{{ acr_name }}/{{ repo_name }}:{{ container_name }}"
         state: started
         ports:
           - "5432:5432"
@@ -114,12 +109,12 @@
     container_name: nodejs
   tasks:
     - name: Remove container and image if exist
-      shell: "docker ps -q --filter 'name={{ container_name }}' && docker stop {{ container_name }} && docker rm -fv {{ container_name }} && docker image rm -f {{ container_registry }}/{{ repo_name }}:{{ container_name }} || echo 'Not Found'"
+      shell: "docker ps -q --filter 'name={{ container_name }}' && docker stop {{ container_name }} && docker rm -fv {{ container_name }} && docker image rm -f {{ acr_name }}/{{ repo_name }}:{{ container_name }} || echo 'Not Found'"
 
     - name: Launch Nodejs docker container
       docker_container:
         name: "{{ container_name }}"
-        image: "{{ container_registry }}/{{ repo_name }}:{{ container_name }}"
+        image: "{{ acr_name }}/{{ repo_name }}:{{ container_name }}"
         state: started
         ports:
           - "5000:5000"
@@ -133,12 +128,12 @@
     container_name: react
   tasks:
     - name: Remove container and image if exist
-      shell: "docker ps -q --filter 'name={{ container_name }}' && docker stop {{ container_name }} && docker rm -fv {{ container_name }} && docker image rm -f {{ container_registry }}/{{ repo_name }}:{{ container_name }} || echo 'Not Found'"
+      shell: "docker ps -q --filter 'name={{ container_name }}' && docker stop {{ container_name }} && docker rm -fv {{ container_name }} && docker image rm -f {{ acr_name }}/{{ repo_name }}:{{ container_name }} || echo 'Not Found'"
 
     - name: Launch React docker container
       docker_container:
         name: "{{ container_name }}"
-        image: "{{ container_registry }}/{{ repo_name }}:{{ container_name }}"
+        image: "{{ acr_name }}/{{ repo_name }}:{{ container_name }}"
         state: started
         ports:
           - "3000:3000"
