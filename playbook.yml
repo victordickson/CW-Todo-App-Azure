@@ -1,4 +1,4 @@
-- name: Install Docker and configure
+- name: Install Docker and config
   hosts: _development
   become: true
   vars_files:
@@ -13,7 +13,7 @@
       yum:
         name: "{{ item }}"
         state: removed
-      loop:
+      with_items:
         - docker
         - docker-client
         - docker-client-latest
@@ -27,7 +27,7 @@
       yum:
         name: "{{ item }}"
         state: latest
-      loop:
+      with_items:
         - yum-utils
         - device-mapper-persistent-data
         - lvm2
@@ -42,17 +42,17 @@
       package:
         name: docker-ce
         state: latest
-        
+
     - name: Install pip
       package:
         name: python3-pip
         state: present
         update_cache: true
-        
+
     - name: Install Docker SDK
       pip:
         name: docker
-        
+
     - name: Add clouduser to docker group
       user:
         name: clouduser
@@ -60,26 +60,10 @@
         append: yes
 
     - name: Start Docker service
-      systemd:
+      service:
         name: docker
         state: started
         enabled: yes
-
-    - name: Import Microsoft key
-      rpm_key:
-        key: https://packages.microsoft.com/keys/microsoft.asc
-        state: present
-
-    - name: Add Azure CLI repository
-      copy:
-        dest: /etc/yum.repos.d/azure-cli.repo
-        content: |
-          [azure-cli]
-          name=Azure CLI
-          baseurl=https://packages.microsoft.com/yumrepos/azure-cli
-          enabled=1
-          gpgcheck=1
-          gpgkey=https://packages.microsoft.com/keys/microsoft.asc
 
     - name: Install Azure CLI
       yum:
@@ -87,11 +71,8 @@
         state: latest
 
     - name: Login to Azure Container Registry
-      azure_rm_containerregistry:
-        resource_group: "{{ acr_resource_group }}"
-        name: "{{ acr_name }}"
-        username: "{{ sp_username }}"
-        password: "{{ sp_password }}"
+      shell: |
+        az acr login --name {{ acr_name }}
 
 - name: PostgreSQL database config   # PLAY2
   hosts: _postgresql
