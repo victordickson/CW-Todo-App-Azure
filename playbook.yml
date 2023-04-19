@@ -87,7 +87,11 @@
         state: latest
 
     - name: Login to Azure Container Registry
-      shell: az acr login --name {{ acr_name }}
+      azure_rm_containerregistry:
+        resource_group: "{{ acr_resource_group }}"
+        name: "{{ acr_name }}"
+        username: "{{ sp_username }}"
+        password: "{{ sp_password }}"
 
 - name: PostgreSQL database config   # PLAY2
   hosts: _postgresql

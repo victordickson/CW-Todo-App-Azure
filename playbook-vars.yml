@@ -1,3 +1,6 @@
 acr_name: phonebookcoy.azurecr.io
+acr_resource_group: phonebook-rg
+sp_username: 455717b7-1237-45a8-9b7c-3baf345b1385
+sp_password: eOI8Q~qxQojCXvDz20Z8RiAExaHFUWBZZMtIIdhC
 repo_name: jenkins-project
 postgres_password: Pp123456789
