@@ -70,16 +70,10 @@
         name: azure-cli
         state: latest
 
-    - name: Login to Azure Container Registry using MSI
-      azure_rm_login:
-        resource_group: "{{ azure_resource_group }}"
-      register: login_info
-
-    - name: Log in to Azure Container Registry using the login credentials returned by the Azure login task
-      shell: az acr login --name {{ acr_name }}
-      environment:
-        AZURE_ACCESS_TOKEN: "{{ login_info.access_token }}"
-      changed_when: false
+    - name: Login to Azure Container Registry
+      shell: |
+        az login --service-principal --username {{ azure_client_id }} --password {{ azure_client_secret }} --tenant {{ azure_tenant_id }}
+        az acr login --name {{ acr_name }}
 
 
 - name: PostgreSQL database config   # PLAY2

@@ -1,4 +1,6 @@
 acr_name: phonebookcoy.azurecr.io
-azure_resource_group: phonebook-rg
+azure_client_id: 455717b7-1237-45a8-9b7c-3baf345b1385
+azure_client_secret: eOI8Q~qxQojCXvDz20Z8RiAExaHFUWBZZMtIIdhC
+azure_tenant_id: 0d351a91-c0d7-415d-b8f5-e83d62053ee3
 repo_name: jenkins-project
 postgres_password: Pp123456789
