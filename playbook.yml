@@ -87,13 +87,7 @@
         state: latest
 
     - name: Login to Azure Container Registry
-      vars:
-        acr_name: phonebookcoy.azurecr.io # replace with your ACR name
-      shell: |
-        echo "ACR Name: {{ acr_name }}"
-        az acr login --name {{ acr_name }}
-
-
+      shell: az acr login --name {{ acr_name }}
 
 - name: PostgreSQL database config   # PLAY2
   hosts: _postgresql
