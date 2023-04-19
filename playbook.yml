@@ -65,10 +65,17 @@
         state: started
         enabled: yes
 
-    - name: Install Azure CLI
-      yum:
-        name: azure-cli
-        state: latest
+    - name: Download and run Azure CLI installation script
+      get_url:
+        url: https://aka.ms/InstallAzureCliRedhat
+        dest: /tmp/install_az.sh
+        mode: '0755'
+      register: download_result
+
+    - name: Run Azure CLI installation script
+      shell: /tmp/install_az.sh
+      args:
+        creates: /usr/bin/az
 
     - name: Login to Azure Container Registry
       shell: |
