@@ -69,6 +69,7 @@
       yum:
         name: azure-cli
         state: latest
+      when: ansible_os_family == "RedHat"
 
     - name: Login to Azure Container Registry
       shell: |
