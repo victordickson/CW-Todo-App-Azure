@@ -87,8 +87,11 @@
         state: latest
 
     - name: Login to Azure Container Registry
+      vars_files:
+        - "playbook-vars.yml"
       shell: |
         az acr login --name {{ acr_name }}
+
 
 - name: PostgreSQL database config   # PLAY2
   hosts: _postgresql
