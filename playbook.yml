@@ -65,11 +65,25 @@
         state: started
         enabled: yes
 
-    - name: Install Azure CLI
+    - name: Add Microsoft repository
+      yum_repository:
+        name: azure-cli
+        baseurl: https://packages.microsoft.com/yumrepos/azure-cli
+        enabled: 1
+        gpgcheck: 1
+        gpgkey: https://packages.microsoft.com/keys/microsoft.asc
+      when: ansible_distribution == 'CentOS' or ansible_distribution == 'RedHat'
+
+    - name: Install Azure CLI on CentOS/RedHat
       yum:
         name: azure-cli
-        state: latest
-      when: ansible_os_family == "RedHat"
+        state: present
+      when: ansible_distribution == 'CentOS' or ansible_distribution == 'RedHat'
+
+    - name: Verify Azure CLI installation
+      command: az --version
+      changed_when: false
+      failed_when: "'azure-cli' not in az_version.stderr"
 
     - name: Login to Azure Container Registry
       shell: |
