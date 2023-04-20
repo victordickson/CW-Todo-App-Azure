@@ -84,12 +84,14 @@
         name: azure-cli
         state: present
 
-    - name: Login to Azure
-      azure.azcollection.azure_rm_login:
-        subscription_id: d0d8f222-75d0-490f-9603-329261a2d7ca
-        client_id: 455717b7-1237-45a8-9b7c-3baf345b1385
-        secret: eOI8Q~qxQojCXvDz20Z8RiAExaHFUWBZZMtIIdhC
-        tenant: 0d351a91-c0d7-415d-b8f5-e83d62053ee3
+    - name: Log into Azure CLI with managed identity
+      command: az login --identity
+      register: azure_login_output
+      changed_when: false
+
+    - name: Use Azure CLI credentials to authenticate
+      azure:
+        auth_source: auto 
       
     - name: Log into ACR
       command: az acr login --name {{ acr_name }}
