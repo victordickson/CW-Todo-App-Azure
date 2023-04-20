@@ -86,12 +86,6 @@
 
     - name: Log into Azure CLI with managed identity
       command: az login --identity
-      register: azure_login_output
-      changed_when: false
-
-    - name: Use Azure CLI credentials to authenticate
-      azure:
-        auth_source: auto 
       
     - name: Log into ACR
       command: az acr login --name {{ acr_name }}
