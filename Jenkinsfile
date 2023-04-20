@@ -84,17 +84,17 @@ pipeline {
         }
     }
 
-    // post {
-    //     always {
-    //         echo 'Deleting all local images'
-    //         sh 'docker image prune -af'
-    //     }
+    post {
+        always {
+            echo 'Deleting all local images'
+            sh 'docker image prune -af'
+        }
 
-    //     failure {
-    //         echo 'Delete the Image Repository on ECR due to the Failure'
-    //         sh 'az acr delete --name ${ACR_REPO_NAME} --yes'
-    //         echo 'Deleting Terraform Stack due to the Failure'
-    //         sh 'terraform destroy --auto-approve'
-    //     }
-    // }
+        failure {
+            echo 'Delete the Image Repository on ECR due to the Failure'
+            sh 'az acr delete --name ${ACR_REPO_NAME} --yes'
+            echo 'Deleting Terraform Stack due to the Failure'
+            sh 'terraform destroy --auto-approve'
+        }
+    }
 }
