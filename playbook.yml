@@ -65,35 +65,30 @@
         state: started
         enabled: yes
 
-    - name: Add Microsoft repo key
-      rpm_key:
-        state: present
-        key: https://packages.microsoft.com/keys/microsoft.asc
-
-    - name: Add Microsoft repo
-      yum_repository:
-        name: azure-cli
-        description: Azure CLI
-        baseurl: https://packages.microsoft.com/yumrepos/azure-cli
-        gpgcheck: yes
-        enabled: yes
-        gpgkey: https://packages.microsoft.com/keys/microsoft.asc
-
     - name: Install Azure CLI
       yum:
+        name:
+          - python3
+          - python3-pip
+          - openssl-devel
+        state: present
+      become: true
+    - name: Install Azure CLI via pip
+      pip:
         name: azure-cli
         state: present
 
-    - name: Login to Azure Container Registry with Managed Identity
-      shell: |
-        az acr login --name {{ acr_name }} 
-      args:
-        executable: /bin/bash
-        warn: yes
-        echo: yes
-      register: acr_login_result
-      debug:
-        var: acr_login_result
+    - name: Log into Azure CLI
+      command: az login
+      register: azure_login
+      no_log: true
+    - name: Log into ACR
+      command: az acr login --name {{ acr_name }}
+      environment:
+        AZURE_ACCESS_TOKEN: "{{ azure_login.stdout_lines[0] | from_json | json_query('accessToken') }}"
+      register: acr_login
+      no_log: true
+
 
 - name: PostgreSQL database config   # PLAY2
   hosts: _postgresql
