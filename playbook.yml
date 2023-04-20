@@ -99,12 +99,12 @@
     container_name: postgresql
   tasks:
     - name: Remove container and image if exist
-      shell: "docker ps -q --filter 'name={{ container_name }}' && docker stop {{ container_name }} && docker rm -fv {{ container_name }} && docker image rm -f {{ acr_name }}/{{ repo_name }}:{{ container_name }} || echo 'Not Found'"
+      shell: "docker ps -q --filter 'name={{ container_name }}' && docker stop {{ container_name }} && docker rm -fv {{ container_name }} && docker image rm -f {{ acr_name }}.azurecr.io/{{ repo_name }}:{{ container_name }} || echo 'Not Found'"
 
     - name: Launch PostgreSQL Docker container
       docker_container:
         name: "{{ container_name }}"
-        image: "{{ acr_name }}/{{ repo_name }}:{{ container_name }}"
+        image: "{{ acr_name }}.azurecr.io/{{ repo_name }}:{{ container_name }}"
         state: started
         ports:
           - "5432:5432"
@@ -122,12 +122,12 @@
     container_name: nodejs
   tasks:
     - name: Remove container and image if exist
-      shell: "docker ps -q --filter 'name={{ container_name }}' && docker stop {{ container_name }} && docker rm -fv {{ container_name }} && docker image rm -f {{ acr_name }}/{{ repo_name }}:{{ container_name }} || echo 'Not Found'"
+      shell: "docker ps -q --filter 'name={{ container_name }}' && docker stop {{ container_name }} && docker rm -fv {{ container_name }} && docker image rm -f {{ acr_name }}.azurecr.io/{{ repo_name }}:{{ container_name }} || echo 'Not Found'"
 
     - name: Launch Nodejs docker container
       docker_container:
         name: "{{ container_name }}"
-        image: "{{ acr_name }}/{{ repo_name }}:{{ container_name }}"
+        image: "{{ acr_name }}.azurecr.io/{{ repo_name }}:{{ container_name }}"
         state: started
         ports:
           - "5000:5000"
@@ -141,12 +141,12 @@
     container_name: react
   tasks:
     - name: Remove container and image if exist
-      shell: "docker ps -q --filter 'name={{ container_name }}' && docker stop {{ container_name }} && docker rm -fv {{ container_name }} && docker image rm -f {{ acr_name }}/{{ repo_name }}:{{ container_name }} || echo 'Not Found'"
+      shell: "docker ps -q --filter 'name={{ container_name }}' && docker stop {{ container_name }} && docker rm -fv {{ container_name }} && docker image rm -f {{ acr_name }}.azurecr.io/{{ repo_name }}:{{ container_name }} || echo 'Not Found'"
 
     - name: Launch React docker container
       docker_container:
         name: "{{ container_name }}"
-        image: "{{ acr_name }}/{{ repo_name }}:{{ container_name }}"
+        image: "{{ acr_name }}.azurecr.io/{{ repo_name }}:{{ container_name }}"
         state: started
         ports:
           - "3000:3000"
