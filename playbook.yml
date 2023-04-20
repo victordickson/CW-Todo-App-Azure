@@ -65,16 +65,22 @@
         state: started
         enabled: yes
 
+    - name: Add Microsoft repo key
+      rpm_key:
+        state: present
+        key: https://packages.microsoft.com/keys/microsoft.asc
+
+    - name: Add Microsoft repo
+      yum_repository:
+        name: azure-cli
+        description: Azure CLI
+        baseurl: https://packages.microsoft.com/yumrepos/azure-cli
+        gpgcheck: yes
+        enabled: yes
+        gpgkey: https://packages.microsoft.com/keys/microsoft.asc
+
     - name: Install Azure CLI
       yum:
-        name:
-          - python3
-          - python3-pip
-          - openssl-devel
-        state: present
-      become: true
-    - name: Install Azure CLI via pip
-      pip:
         name: azure-cli
         state: present
 
