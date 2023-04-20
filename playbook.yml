@@ -84,10 +84,16 @@
         name: azure-cli
         state: present
 
-    - name: Login to Azure Container Registry
+    - name: Set environment variable for Managed Identity Client ID
       shell: |
-        az acr login --name {{ acr_name }} --verbose
+        export MSI_CLIENT_ID=$(curl -s -H Metadata:true "http://169.254.169.254/metadata/identity/oauth2/token?api-version=2018-02-01&resource=https://management.azure.com/" | jq -r .client_id)
 
+
+    - name: Login to Azure Container Registry with Managed Identity
+      shell: |
+        az acr login --name {{ acr_name }} --identity
+      environment:
+        MSI_CLIENT_ID: "{{ lookup('env', 'MSI_CLIENT_ID') }}"
 
 - name: PostgreSQL database config   # PLAY2
   hosts: _postgresql
