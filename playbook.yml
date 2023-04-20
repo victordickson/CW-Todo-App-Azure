@@ -84,17 +84,12 @@
         name: azure-cli
         state: present
 
-    - name: Log into Azure CLI
+    - name: Log into Azure CLI with managed identity
       command: az login
-      register: azure_login
-      no_log: true
+      register: az login --identity
+      
     - name: Log into ACR
       command: az acr login --name {{ acr_name }}
-      environment:
-        AZURE_ACCESS_TOKEN: "{{ azure_login.stdout_lines[0] | from_json | json_query('accessToken') }}"
-      register: acr_login
-      no_log: true
-
 
 - name: PostgreSQL database config   # PLAY2
   hosts: _postgresql
