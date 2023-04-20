@@ -85,8 +85,8 @@
         state: present
 
     - name: Log into Azure CLI with managed identity
-      command: az login
-      register: az login --identity
+      command: az login --identity
+      register: az login 
       
     - name: Log into ACR
       command: az acr login --name {{ acr_name }}
