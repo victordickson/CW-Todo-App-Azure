@@ -96,3 +96,24 @@ pip3 install msrest
   - Deploy the application on Azure VM's with ansible.
 
   - Make a failure stage and ensure to destroy infrastructure, ACR repo and docker images when the pipeline failed.
+
+- How to authenticate Ansible with Azure
+	- First ensure azure cli is installed, then login az login
+	- Next you need client id and secret before Ansible can be able to authenticate with Azure! You can do that by running the following command
+	```
+	$ az ad sp create-for-rbac --name http://ansible-techcrux --role owner --scopes "/subscriptions/$AZURE_SUBSCRIPTION_ID/resourceGroups/$RESOURCE_GROUP_NAME"
+	{
+	"appId": "f86af23a-......",
+	"displayName": "ansible-techcrux",
+	"name": "http://ansible-techcrux",
+	"password": "37d908aa-.......",
+	"tenant": "9f340302-........."
+	}
+	```
+	In this example appId==AZURE_CLIENT_ID and password==AZURE_SECRET. After exporting these environment variables you should be able to use Ansible to authenticate to azure.
+	```
+	export AZURE_SUBSCRIPTION_ID=8d026bb1-.....
+	export AZURE_TENANT=9f340302-..............
+	export AZURE_CLIENT_ID=f86af23a-...........
+	export AZURE_SECRET=37d908aa-..............
+	```
