@@ -1,3 +1,3 @@
-acr_name: phonebookcoy
-repo_name: jenkins-project
+acr_name: phonebookcoy.azurecr.io
+repo_name: phonebookcoy
 postgres_password: Pp123456789
