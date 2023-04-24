@@ -18,7 +18,7 @@ pipeline {
             steps {
                 sh 'az login --identity'
                 echo 'Creating Infrastructure for the App on Azure Cloud'
-                sh 'terraform init'
+                sh 'terraform init -no-color'
                 sh 'terraform apply --auto-approve'
             }
         }
