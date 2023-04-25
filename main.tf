@@ -12,8 +12,8 @@ terraform {
     container_name       = "tfstate"
     key                  = "terraform.tfstate"
     use_msi              = true
-    subscription_id      = "d0d8f222-75d0-490f-9603-329261a2d7ca"
-    tenant_id            = "0d351a91-c0d7-415d-b8f5-e83d62053ee3"
+    subscription_id      = "d0d8fxxxxxxxxxxxxxxxxxxxxxxxxxx"
+    tenant_id            = "0d35xxxxxxxxxxxxxxxxxxxxxxxxxxx"
   }
 }
 
@@ -22,8 +22,8 @@ provider "azurerm" {
   }
 
   use_msi         = true
-  subscription_id      = "d0d8f222-75d0-490f-9603-329261a2d7ca"
-  tenant_id            = "0d351a91-c0d7-415d-b8f5-e83d62053ee3"
+  subscription_id      = "d0d8fxxxxxxxxxxxxxxxxxxxxxxxxxx"
+  tenant_id            = "0d35xxxxxxxxxxxxxxxxxxxxxxxxxxx"
 }
 
 ######################

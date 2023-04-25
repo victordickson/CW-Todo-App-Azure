@@ -70,19 +70,27 @@ pipeline {
              }
         }
 
-        stage('Destroy the infrastructure'){
-            steps{
-                timeout(time:5, unit:'DAYS') {
-                    input message:'Approve terminate'
+        stage('Destroy the infrastructure') {
+            steps {
+                script {
+                    try {
+                        timeout(time: 5, unit: 'DAYS') {
+                            input message: 'Approve terminate'
+                        }
+                        sh """
+                            docker image prune -af
+                            terraform destroy --auto-approve -no-color
+                            az acr delete --name ${APP_REPO_NAME} --yes
+                        """
+                    } catch (err) {
+                        currentBuild.result = 'FAILURE'
+                        echo "Error occurred: ${err}"
+                        echo 'Deleting Terraform Stack due to the Failure'
+                        sh 'terraform destroy --auto-approve -no-color'
+                    }
                 }
-                sh """
-                docker image prune -af
-                terraform destroy --auto-approve
-                az acr delete --name ${APP_REPO_NAME} --yes
-                """
             }
         }
-    }
 
     post {
         always {
