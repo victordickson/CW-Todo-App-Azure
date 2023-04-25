@@ -89,12 +89,15 @@ pipeline {
             echo 'Deleting all local images'
             sh 'docker image prune -af'
         }
+        success {
+        echo 'Pushing App Image to ACR Repo succeeded'
+        }
 
         failure {
             echo 'Delete the Image Repository on ECR due to the Failure'
-            sh 'az acr delete --name ${ACR_REPO_NAME} --yes'
+            sh 'az acr delete --name ${APP_REPO_NAME} --yes'
             echo 'Deleting Terraform Stack due to the Failure'
-            sh 'terraform destroy --auto-approve'
+            sh 'terraform destroy --auto-approve -no-color'
         }
     }
 }
